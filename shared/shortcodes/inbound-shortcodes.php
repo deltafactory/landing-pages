@@ -584,8 +584,7 @@ class Inbound_Shortcodes {
 			$column_css = "#inbound-list.class-".$num." ul { clear:both;} #inbound-list.class-".$num." li { width: 19.5%; float: left; display: inline;}";
 		}
 
-		return '<style type="text/css">
-
+		return '<div id="inbound-list" class="inbound-list class-'.$num.' fa-list-'.$icon.'">'. do_shortcode($content).'</div>' . '<style type="text/css">
 			#inbound-list.class-'.$num.' li {
 			'.$final_text_color.'
 			list-style: none;
@@ -612,10 +611,7 @@ class Inbound_Shortcodes {
 				width:100%;
 			}
 			}
-			</style>
-			<div id="inbound-list" class="inbound-list class-'.$num.' fa-list-'.$icon.'">
-			'. do_shortcode($content).'
-			</div>';
+			</style>';
 	}
 
 	static function inbound_forms_header_area()
@@ -667,9 +663,9 @@ class Inbound_Shortcodes {
 			$email_template =	get_post_meta( $post->ID, 'inbound_email_send_notification_template' , TRUE );
 
 			?>
-			<div	style='display:block; overflow: auto;'>
+			<div style='display:block; overflow: auto;'>
 				<div id='email-confirm-settings'>
-					<label for="inbound_email_send">Toggle Email Confirmation</label>
+					<label for="inbound_email_send">Email Confirmation is currently: </label>
 					<select name="inbound_email_send_notification" id="inbound_email_send_notification">
 						<option value="off" <?php selected( $selected, 'off' ); ?>>Off</option>
 						<option value="on" <?php selected( $selected, 'on' ); ?>>On</option>
@@ -730,7 +726,7 @@ class Inbound_Shortcodes {
 		</div>
 		<div id="inbound-shortcodes-popup">
 			<div id="short_shortcode_form">
-				Shortcode: <input type="text" class="regular-text code short-shortcode-input" readonly="readonly" id="shortcode" name="shortcode" value='[inbound_forms id="<?php echo $post_id;?>" name="<?php echo $post_title;?>"]'>
+				Copy Shortcode: <input type="text" class="regular-text code short-shortcode-input" readonly="readonly" id="shortcode" name="shortcode" value='[inbound_forms id="<?php echo $post_id;?>" name="<?php echo $post_title;?>"]'>
 			</div>
 			<div id="inbound-shortcodes-wrap">
 						<div id="inbound-shortcodes-form-wrap">

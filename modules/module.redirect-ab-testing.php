@@ -5,27 +5,29 @@ define("DONOTCACHEPAGE", true);
 define('DONOTCACHCEOBJECT', true); 
 define('DONOTCDN', true); 
 
-if ( file_exists ( './../../../../wp-config.php' ) )
+if ( file_exists ( './../../../../wp-load.php' ) )
 {
-	include_once ( './../../../../wp-config.php' );
-	include_once ( './../../../../wp-includes/admin-bar.php' );
+	include_once ( './../../../../wp-load.php' );
 }
-else if ( file_exists ( './../../../../../wp-config.php' ) )
+else if ( file_exists ( './../../../../../wp-load.php' ) )
 {
-	include_once ( './../../../../../wp-config.php' );
+	include_once ( './../../../../../wp-load.php' );
 }
 
 class LP_Variation_Rotation {
 
 	static $permalink_name;
 	static $post_id;
+	static $sticky_variations;
 	static $last_loaded_variation;
 	static $variations; 
 	static $marker;
 	static $next_marker;
 	static $destination_url;
 	
-	/* Exectutes Class */
+	/**
+	 *  	Executes Class 
+	 */
 	public function __construct() {
 	
 		self::load_variables();
@@ -34,34 +36,49 @@ class LP_Variation_Rotation {
 		
 	}
 	
-	/* Loads Static Variables */
+	/**
+	 *  	Loads Static Variables
+	 */
 	private static function load_variables()
 	{	
-		self::$permalink_name = (isset($_GET['permalink_name'])) ? $_GET['permalink_name'] : null;
+		self::$permalink_name = (isset($_GET['permalink_name'])) ?  sanitize_text_field($_GET['permalink_name']) : null;
 		self::$post_id = self::load_post_id();
+		self::$sticky_variations = get_option( 'lp-main-landing-page-rotation-halt' , false );
 		self::$last_loaded_variation = ( isset( $_COOKIE['lp-loaded-variation-'.self::$permalink_name] ) ) ? $_COOKIE['lp-loaded-variation-'.self::$permalink_name] : null;
-		self::$variations = self::load_variations();
-		self::$marker = self::load_marker();
-		self::$next_marker = self::discover_next_variation();
-		self::$destination_url = self::build_destination_url();
+
+		if ( self::$sticky_variations && self::$last_loaded_variation ) {
+			self::$destination_url = self::$last_loaded_variation;
+		} else {
+			self::$variations = self::load_variations();
+			self::$marker = self::load_marker();
+			self::$next_marker = self::discover_next_variation();			
+			self::$destination_url = self::build_destination_url();
+		}
+		
 	}
 	
-	/* Debug Information - Prints Class Variable Data */
+	/**
+	 *  	Debug Information - Prints Class Variable Data 
+	 */
 	static function run_debug() {
 		print_r($this);exit;
 	}
 	
-	/* Loads the ID of the Landing Page */
+	/**
+	 *  	Loads the ID of the Landing Page 
+	 */
 	static function load_post_id() {
 		global $wpdb;
 		
-		$post_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_name = %s AND post_type='landing-page'", $_GET['permalink_name'] ));
+		$post_id = $wpdb->get_var( $wpdb->prepare( "SELECT ID FROM $wpdb->posts WHERE post_name = %s AND post_type='landing-page'", self::$permalink_name ));
 		
 		return $post_id;
 		
 	}
 	
-	/* Loads an Array of Active Variations Associated with Landing Page */
+	/**
+	 *  	Loads an Array of Active Variations Associated with Landing Page 
+	 */
 	static function load_variations() {
 		
 		$live_variations = array();
@@ -88,7 +105,9 @@ class LP_Variation_Rotation {
 		return $live_variations;		
 	}
 	
-	/* Loads Variation ID of Last Variation Loaded */
+	/**
+	 *  	Loads Variation ID of Last Variation Loaded 
+	 */
 	static function load_marker() {
 		
 		$marker = get_post_meta( self::$post_id , 'lp-ab-variations-marker' , true );
@@ -101,7 +120,9 @@ class LP_Variation_Rotation {
 		return $marker;
 	}
 	
-	/* Discovers Next Variation in Line */
+	/**
+	 *  	Discovers Next Variation in Line 
+	 */
 	static function discover_next_variation() {
 	
 		/* Set Pointer to Correct Location in Variations Array */
@@ -124,7 +145,9 @@ class LP_Variation_Rotation {
 		
 	}
 	
-	/* Builds Redirect URL & Stores Cookie Data */
+	/**
+	 *  	Builds Redirect URL & Stores Cookie Data 
+	 */
 	static function build_destination_url() {
 		
 		/* Load Base URL */
@@ -148,10 +171,13 @@ class LP_Variation_Rotation {
 		return $url;
 	}
 
-	/* Redirects to Correct Variation */
+	/**
+	 *  	Redirects to Correct Variation
+	 */
 	static function redirect() {
-		@header("HTTP/1.1 307 Temporary Redirect");
-		@header("Location: ".self::$destination_url);
+		header("HTTP/1.1 302 Temporary Redirect");
+		header("Location: ".self::$destination_url);
+		exit;
 	}
 }
 
